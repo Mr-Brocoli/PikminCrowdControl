@@ -224,36 +224,7 @@ namespace CrowdControl.Games.Packs
             //() => { Connector.SendMessage(msg); });
             return true;
         }
-
-        private bool setParmTimed(EffectRequest request, uint[] parmLoc, string parmNameS, uint parmVal, double time)
-        {
-            uint parmName = 0;
-            //cause an exception if parmNameS is !3 if you want i don't care enough to, just don't write that!
-            parmName |= (uint)(parmNameS[0])<<24;
-            parmName |= (uint)(parmNameS[1])<<16;
-            parmName |= (uint)(parmNameS[2])<<8;
-            StartTimed(request,
-            () => true,
-            () =>
-            {
-                uint parmList = getAddressInner(parmLoc);
-                Connector.SendMessage($"{parmList:X}");
-                //first u32 will never be the right parm name (is not a parm)
-                for (uint i = 4; i != 3000; i += 4)
-                {
-                    Connector.Read32(parmList + i, out uint parmCheckName);
-                    if (parmCheckName == parmName)
-                    {
-                        Connector.SendMessage($"{parmName:X}");
-                        Connector.Write32(parmList + i + 0xc, parmVal);
-                        return true;
-                    }
-                }
-                return false;
-            }, TimeSpan.FromSeconds(time), parmNameS);
-            return true;
-        }
-
+        
         private bool setPikiColor(byte[] color, uint typeId=0)
         {
             Connector.SendMessage($"make le {typeId} pickle le {color[0]:X}");
