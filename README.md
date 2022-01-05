@@ -1,7 +1,7 @@
 # PikminCrowdControl
 Pikmin 1 Crowd Control for Pikmin USA v 1.0.1
 
-All effects designed to work with Pikmin 1 Multiplayer by Mr. Brocoli!
+All effects designed to work with Pikmin 1 Multiplayer: https://allreds.itch.io/pikmin-multiplayer
 
 Effect Descriptions:
 
