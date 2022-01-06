@@ -288,7 +288,7 @@ namespace CrowdControl.Games.Packs
                         setParm(request, parmsPikiMgr, "p13", hexFloat(15));
                        // Connector.SendMessage("The Pickles are do be strong rn!");
                         return true;
-                    }, TimeSpan.FromSeconds(5), "pikistrength");
+                    }, TimeSpan.FromSeconds(15), "pikistrength");
                     return;
                 case "pikiallweak":
                     StartTimed(request, () => true, () => {
@@ -297,7 +297,7 @@ namespace CrowdControl.Games.Packs
                         setParm(request, parmsPikiMgr, "p13", hexFloat(5));
                        // Connector.SendMessage("The Pickles are do be weak rn!");
                         return true;
-                    }, TimeSpan.FromSeconds(5), "pikistrength");
+                    }, TimeSpan.FromSeconds(15), "pikistrength");
                     return;
                 //The game processes time really weird. -0x7-0x6 is the unused night time mode... 0x7 - 0x13 is day time. The day ends once the dayTimeInt hits 0x13.
                 case "forwardtime":
@@ -353,13 +353,13 @@ namespace CrowdControl.Games.Packs
                             Connector.Write32(ACTPIKI_BADSTATES[i], FUNC_RETURN_ONE);
                         }
                         return true;
-                    }, TimeSpan.FromSeconds(5), request.FinalCode);
+                    }, TimeSpan.FromSeconds(10), request.FinalCode);
                     return;
                 case "invisiblepikmin":
                     StartTimed(request, () => true, () => {
                         Connector.Write32(DEMODRAW_PIKI_PTR, FUNC_RETURN_ONE);
                         return true;
-                    }, TimeSpan.FromSeconds(5), request.FinalCode);
+                    }, TimeSpan.FromSeconds(10), request.FinalCode);
                     return;
                 case "disablewhistle":
                     StartTimed(request, () => true, () => {
@@ -399,7 +399,7 @@ namespace CrowdControl.Games.Packs
                             setParm(request, arr, "p56", hexFloat(320));
                         }
                         return true;
-                    }, TimeSpan.FromSeconds(5), "navispeed");
+                    }, TimeSpan.FromSeconds(10), "navispeed");
                     return;
                 case "navislow":
                     StartTimed(request, () => true, () => {
@@ -410,7 +410,7 @@ namespace CrowdControl.Games.Packs
                             setParm(request, arr, "p56", hexFloat(80));
                         }
                         return true;
-                    }, TimeSpan.FromSeconds(5), "navispeed");
+                    }, TimeSpan.FromSeconds(10), "navispeed");
                     return;
                 case "resetolimarpos":
                     Connector.Read32(NAVIGENERATOR, out uint naviGenerator);
@@ -434,13 +434,13 @@ namespace CrowdControl.Games.Packs
                             setParm(request, arr, "p47", hexFloat(900));
                         }
                         return true;
-                    }, TimeSpan.FromSeconds(5), request.FinalCode);
+                    }, TimeSpan.FromSeconds(15), request.FinalCode);
                     return;
                 case "disablehud":
                     StartTimed(request, () => true, () => {
                         Connector.Write32(HUD_FLOATVAL, 0);
                         return true;
-                    }, TimeSpan.FromSeconds(5), request.FinalCode);
+                    }, TimeSpan.FromSeconds(20), request.FinalCode);
                     return;
             }
         }
