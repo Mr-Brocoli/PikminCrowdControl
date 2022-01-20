@@ -7,7 +7,7 @@ using CrowdControl.Common;
 using JetBrains.Annotations;
 using System.Runtime.InteropServices;
 
-//test moments
+//test moments SUS
 
 namespace CrowdControl.Games.Packs
 {
