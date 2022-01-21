@@ -15,14 +15,6 @@ namespace CrowdControl.Games.Packs
     {
         public Pikmin([NotNull] IPlayer player, [NotNull] Func<CrowdControlBlock, bool> responseHandler, [NotNull] Action<object> statusUpdateHandler) : base(player, responseHandler, statusUpdateHandler) { }
 
-        private volatile bool _quitting = false;
-        protected override void Dispose(bool disposing)
-        {
-            _quitting = true;
-            base.Dispose(disposing);
-        }
-
-
         private const uint SDA = 0x803e4d20;
         private const uint TOC = 0x803f0200;
         private const uint PIKIMGR = SDA + 0x3068;
@@ -117,7 +109,7 @@ namespace CrowdControl.Games.Packs
 
         public override List<(string, Action)> MenuActions => new List<(string, Action)>();
 
-        public override Game Game { get; } = new Game(0xDEADBEEF, "Pikmin", "Pikmin", "GC", ConnectorType.WiiConnector);
+        public override Game Game { get; } = new Game(124, "Pikmin", "Pikmin", "GC", ConnectorType.WiiConnector);
 
         protected override bool IsReady(EffectRequest request)
         {
@@ -177,12 +169,12 @@ namespace CrowdControl.Games.Packs
         private uint[] getNavis()
         {
             Connector.Read32(NAVIMGR, out uint naviMgr);
-            Connector.Read32(naviMgr+0x30, out uint naviNum);
+            Connector.Read32(naviMgr + 0x30, out uint naviNum);
             uint[] toRet = new uint[naviNum];
             Connector.Read32(naviMgr + 0x28, out uint naviObjList);
             for (uint i = 0; i != naviNum; i++)
             {
-                Connector.Read32(naviObjList + i*4, out toRet[i]);
+                Connector.Read32(naviObjList + i * 4, out toRet[i]);
             }
             return toRet;
         }
@@ -192,15 +184,15 @@ namespace CrowdControl.Games.Packs
         {
             TryEffect(request,
             () => true,
-            () => 
-            { 
+            () =>
+            {
                 Connector.Read32(PIKIMGR, out uint pikimgr);
                 Connector.Read32(pikimgr + 0x28, out uint pikimgrInner);
                 for (uint i = 0; i != getPikiCount(); i++)
                 {
                     Connector.Read32(pikimgrInner + i * 4, out uint piki);
                     Connector.Write32(piki + 0x520, happaId); // happa flower state
-                    Connector.Read32(pikimgr + 0x3c + happaId*4, out uint happaModel);
+                    Connector.Read32(pikimgr + 0x3c + happaId * 4, out uint happaModel);
                     Connector.Write32(piki + 0x598, happaModel); // happa flower state
                 }
                 return true;
@@ -209,7 +201,7 @@ namespace CrowdControl.Games.Packs
             return true;
         }
 
-        private bool setParm(EffectRequest request, uint[] parmLoc, string parmNameS, uint parmVal, string msg="SUSSY")
+        private bool setParm(EffectRequest request, uint[] parmLoc, string parmNameS, uint parmVal, string msg = "SUSSY")
         {
             uint parmName = 0;
             //cause an exception if parmNameS is !3 if you want i don't care enough to, just don't write that!
@@ -220,30 +212,30 @@ namespace CrowdControl.Games.Packs
             //() => true,
             //() => 
             //{
-                uint parmList = getAddressInner(parmLoc);
-                //first u32 will never be the right parm name (is not a parm)
-                for (uint i = 4; i != 3000; i += 4)
+            uint parmList = getAddressInner(parmLoc);
+            //first u32 will never be the right parm name (is not a parm)
+            for (uint i = 4; i != 3000; i += 4)
+            {
+                Connector.Read32(parmList + i, out uint parmCheckName);
+                if (parmCheckName == parmName)
                 {
-                    Connector.Read32(parmList + i, out uint parmCheckName);
-                    if(parmCheckName == parmName)
-                    {
-                        Connector.Write32(parmList + i + 0xc, parmVal);
-                        return true;
-                    }
+                    Connector.Write32(parmList + i + 0xc, parmVal);
+                    return true;
                 }
-                return false;
+            }
+            return false;
             //},
             //() => { Connector.SendMessage(msg); });
             return true;
         }
-        
-        private bool setPikiColor(byte[] color, uint typeId=0)
+
+        private bool setPikiColor(byte[] color, uint typeId = 0)
         {
             //Connector.SendMessage($"make le {typeId} pickle le {color[0]:X}");
             uint p = PIKICOLORS + typeId * 4;
             Connector.Write8(p, color[0]);
-            Connector.Write8(p+1, color[1]);
-            Connector.Write8(p+2, color[2]);
+            Connector.Write8(p + 1, color[1]);
+            Connector.Write8(p + 2, color[2]);
             return true;
         }
 
@@ -298,7 +290,7 @@ namespace CrowdControl.Games.Packs
                         setParm(request, parmsPikiMgr, "p04", hexFloat(15));
                         setParm(request, parmsPikiMgr, "p12", hexFloat(20));
                         setParm(request, parmsPikiMgr, "p13", hexFloat(15));
-                       // Connector.SendMessage("The Pickles are do be strong rn!");
+                        // Connector.SendMessage("The Pickles are do be strong rn!");
                         return true;
                     }, TimeSpan.FromSeconds(15), "pikistrength");
                     return;
@@ -307,7 +299,7 @@ namespace CrowdControl.Games.Packs
                         setParm(request, parmsPikiMgr, "p04", hexFloat(5));
                         setParm(request, parmsPikiMgr, "p12", hexFloat(7.5f));
                         setParm(request, parmsPikiMgr, "p13", hexFloat(5));
-                       // Connector.SendMessage("The Pickles are do be weak rn!");
+                        // Connector.SendMessage("The Pickles are do be weak rn!");
                         return true;
                     }, TimeSpan.FromSeconds(15), "pikistrength");
                     return;
@@ -426,10 +418,10 @@ namespace CrowdControl.Games.Packs
                     return;
                 case "resetolimarpos":
                     Connector.Read32(NAVIGENERATOR, out uint naviGenerator);
-                    Connector.Read32(naviGenerator+0x4c, out uint x);
-                    Connector.Read32(naviGenerator+0x50, out uint y);
-                    Connector.Read32(naviGenerator+0x54, out uint z);
-                    foreach(uint navi in getNavis())
+                    Connector.Read32(naviGenerator + 0x4c, out uint x);
+                    Connector.Read32(naviGenerator + 0x50, out uint y);
+                    Connector.Read32(naviGenerator + 0x54, out uint z);
+                    foreach (uint navi in getNavis())
                     {
                         Connector.Write32(navi + 0x94, x);
                         Connector.Write32(navi + 0x98, y);
@@ -438,7 +430,7 @@ namespace CrowdControl.Games.Packs
                     return;
                 case "wiimotecontrols":
                     StartTimed(request, () => true, () => {
-                        foreach(uint navi in getNavis())
+                        foreach (uint navi in getNavis())
                         {
                             Connector.Read32(navi + 0x224, out uint parmsNaviMgr);
                             uint[] arr = { parmsNaviMgr };
@@ -518,6 +510,6 @@ namespace CrowdControl.Games.Packs
                 default:
                     return true;
             }
+        }
     }
-}
 }
