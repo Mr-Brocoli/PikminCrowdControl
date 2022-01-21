@@ -7,7 +7,6 @@ using CrowdControl.Common;
 using JetBrains.Annotations;
 using System.Runtime.InteropServices;
 
-//test moments SUS
 
 namespace CrowdControl.Games.Packs
 {
@@ -70,25 +69,25 @@ namespace CrowdControl.Games.Packs
                     new Effect("Flower field pikmin", "pikiallflower") {Price = 10 },
                     new Effect("Bud field pikmin", "pikiallbud") {Price = 10},
                     new Effect("Leaf field pikmin", "pikiallleaf") {Price = 10},
-                    new Effect("Fast Pikmin", "pikiallfast") {Price = 10},
-                    new Effect("Slow Pikmin", "pikiallslow") {Price = 10},
-                    new Effect("Strong Pikmin", "pikiallstrong") {Price = 10},
-                    new Effect("Weak Pikmin", "pikiallweak") {Price = 10},
+                    new Effect("Fast Pikmin (15 seconds)", "pikiallfast") {Price = 10},
+                    new Effect("Slow Pikmin (15 seconds)", "pikiallslow") {Price = 10},
+                    new Effect("Strong Pikmin (15 seconds)", "pikiallstrong") {Price = 10},
+                    new Effect("Weak Pikmin (15 seconds)", "pikiallweak") {Price = 10},
                     new Effect("Forward Time", "forwardtime") {Price = 10},
                     new Effect("Rewind Time", "rewindtime") {Price = 10},
-                    new Effect("Disable Whistle", "disablewhistle") {Price = 10},
+                    new Effect("Disable Whistle (10 seconds)", "disablewhistle") {Price = 10},
                     new Effect("Grant Pluckaphone", "grantpluckaphone") {Price = 10},
                     new Effect("Revoke Pluckaphone", "revokepluckaphone") {Price = 10},
                     new Effect("Heal Olimar", "navifullhealth") {Price = 10},
                     new Effect("One-Hit KO", "ohko") {Price = 10},
-                    new Effect("Disable Hud", "disablehud") {Price = 10},
-                    new Effect("Hyper Olimar", "navifast") {Price = 10},
-                    new Effect("Lethargic Olimar", "navislow") {Price = 10},
+                    new Effect("Disable Hud (20 seconds)", "disablehud") {Price = 10},
+                    new Effect("Hyper Olimar (10 seconds)", "navifast") {Price = 10},
+                    new Effect("Lethargic Olimar (10 seconds)", "navislow") {Price = 10},
                     new Effect("Send Olimar to Spawn", "resetolimarpos") {Price = 10},
                     new Effect("Thanos Snap", "thanossnap") {Price = 10},
-                    new Effect("Invincible Pikmin!", "invinciblepikmin") {Price = 10}, // This sometimes stutter the game for some reason may want to remove from final product
-                    new Effect("Invisible Pikmin?", "invisiblepikmin") {Price = 10},
-                    new Effect("\"Wiimote\" Controls", "wiimotecontrols") {Price = 10}
+                    new Effect("Invincible Pikmin! (10 seconds)", "invinciblepikmin") {Price = 10}, // This sometimes stutter the game for some reason may want to remove from final product
+                    new Effect("Invisible Pikmin? (15 seconds)", "invisiblepikmin") {Price = 10},
+                    new Effect("\"Wiimote\" Controls (15 seconds)", "wiimotecontrols") {Price = 10}
                 };
                 effects.AddRange(_piki_colors.Select(t => new Effect(t.Value.name, $"blupikicolor_{t.Key}", ItemKind.BidWarValue, "blupikicolor")));
                 effects.AddRange(_piki_colors.Select(t => new Effect(t.Value.name, $"redpikicolor_{t.Key}", ItemKind.BidWarValue, "redpikicolor")));
@@ -120,7 +119,18 @@ namespace CrowdControl.Games.Packs
 
         public override Game Game { get; } = new Game(0xDEADBEEF, "Pikmin", "Pikmin", "GC", ConnectorType.WiiConnector);
 
-        protected override bool IsReady(EffectRequest request) => true;
+        protected override bool IsReady(EffectRequest request)
+        {
+            //Checks if the navi mgr is empty or not, which signals game is not currently in a level 
+            Connector.Read32(NAVIMGR, out uint naviMgr);
+            if (naviMgr == 0) return false;
+            //The game has a bunch of ways of pausing for some reason
+            Connector.Read32(GAMEFLOW + 0x1DC, out uint movieInfo);
+            Connector.Read8(movieInfo + 0x124, out byte isMoviePause);
+            Connector.Read8(GAMEFLOW + 0x33b, out byte genericPause);
+            Connector.Read8(GAMEFLOW + 0x33f, out byte onionPause);
+            return isMoviePause == 0 & genericPause == 0 & onionPause == 0;
+        }
 
         protected override void RequestData(DataRequest request) => Respond(request, request.Key, null, false, $"Variable name \"{request.Key}\" not known");
 
@@ -229,7 +239,7 @@ namespace CrowdControl.Games.Packs
         
         private bool setPikiColor(byte[] color, uint typeId=0)
         {
-            Connector.SendMessage($"make le {typeId} pickle le {color[0]:X}");
+            //Connector.SendMessage($"make le {typeId} pickle le {color[0]:X}");
             uint p = PIKICOLORS + typeId * 4;
             Connector.Write8(p, color[0]);
             Connector.Write8(p+1, color[1]);
@@ -361,7 +371,7 @@ namespace CrowdControl.Games.Packs
                     StartTimed(request, () => true, () => {
                         Connector.Write32(DEMODRAW_PIKI_PTR, FUNC_RETURN_ONE);
                         return true;
-                    }, TimeSpan.FromSeconds(10), request.FinalCode);
+                    }, TimeSpan.FromSeconds(15), request.FinalCode);
                     return;
                 case "disablewhistle":
                     StartTimed(request, () => true, () => {
@@ -370,7 +380,7 @@ namespace CrowdControl.Games.Packs
                             Connector.Write32(navi + 0x310, 0);
                         }
                         return true;
-                    }, TimeSpan.FromSeconds(5), request.FinalCode);
+                    }, TimeSpan.FromSeconds(10), request.FinalCode);
                     return;
                 case "grantpluckaphone":
                     Connector.Read32(AICONSTANT, out uint aiConst);
